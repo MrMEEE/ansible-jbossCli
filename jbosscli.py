@@ -41,7 +41,12 @@ options:
     required: false
     default: /usr/share/wildfly/bin
     description:
-      - The location in the filesystem where jboss-cli.sh is located
+      - The location in the filesystem where jboss-cli script (jboss-cli.bat/jboss-cli.sh is located
+  script_name:
+    required: false
+    default: jboss-cli.sh
+    description:
+      - The name of the jboss-cli script
   user:
     required: false
     description:
@@ -61,7 +66,7 @@ options:
     description:
       - Show the JBoss Cli output, commonly in DMR
 notes:
-  - "jboss-cli.sh need to be running on client host, and $JAVA_HOME/bin is needed in client $PATH"
+  - "jboss needs to be running on client host, and $JAVA_HOME/bin is needed in client $PATH"
   - ""
 """
 
@@ -123,6 +128,7 @@ def main():
             cli_path=dict(default='/usr/share/wildfly/bin'),
             server=dict(default='localhost:9990'),
             verbose=dict(default="False"),
+            script_name=dict(default="jboss-cli.sh"),
         ),
         mutually_exclusive=[['command', 'src']],
     )
@@ -132,16 +138,17 @@ def main():
     password = module.params['password']
     command = module.params['command']
     cli_path = module.params['cli_path']
+    script_name = module.params['script_name']
     server = module.params['server']
     verbose = module.params['verbose']
 
     if user and not password:
         module.fail_json(msg="Argument 'user' needs 'password' ")
 
-    if not os.access(cli_path + "/jboss-cli.sh", os.X_OK):
-        module.fail_json(msg="jboss-cli.sh in not found on cli_path ")
+    if not os.access(cli_path + "/"+ script_name, os.X_OK):
+        module.fail_json(msg=script_name + " not found on cli_path ")
 
-    cmd = [cli_path + "/jboss-cli.sh"]
+    cmd = [cli_path + "/" + script_name]
     cmd.append('-c')
     cmd.append("--controller=" + str(server))
 
